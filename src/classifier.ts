@@ -43,14 +43,14 @@ const RELEASE_SIGNALS: { name: string; pattern: RegExp }[] = [
 
 /** Known model families. Word-boundary matched, case-insensitive, worth +1 each. */
 const MODEL_FAMILIES =
-	/\b(gpt|chatgpt|claude|sonnet|opus|haiku|gemini|gemma|embeddinggemma|llama|mistral|mixtral|deepseek|qwen|grok|command[ -]?r|nova|kimi|glm|aya|phi|copilot|codex|veo|imagen|sora|whisper|daybreak|synthid|weathernext|alphagenome|sima|genie|weather(next)?|nano banana|muse|tribe)\b/i;
+	/\b(gpt|chatgpt|claude|sonnet|opus|haiku|gemini|gemma|embeddinggemma|llama|mistral|mixtral|ministral|codestral|deepseek|qwen|qwq|falcon|nemotron|cosmos|grok|command[ -]?r|nova|kimi|glm|aya|phi|copilot|codex|veo|imagen|sora|whisper|daybreak|synthid|weathernext|alphagenome|sima|genie|weather(next)?|nano banana|muse|tribe|bedrock|sagemaker|nemo|nvidia|titan|granite|watsonx|palm|bard)\b/i;
 
 /** "GPT-6.1", "Gemini 3.8", "WeatherNext 3", "Nano Banana 2" — capitalised name + version. */
 const VERSIONED_PRODUCT = /\b[A-Z][A-Za-z]*(?:[- ]\d+)+(?:\.\d+)*\b/;
 
 /** Headline opens with a *known model family* — the canonical announcement shape. */
 const LEADS_WITH_FAMILY =
-	/^(?:gpt|chatgpt|claude|gemini|gemma|embeddinggemma|llama|mistral|mixtral|deepseek|qwen|grok|command[ -]?r|nova|kimi|glm|aya|phi|copilot|codex|veo|imagen|sora|whisper|daybreak|synthid|weathernext|alphagenome|sima|genie|lyria|muse|tribe)\b/i;
+	/^(?:gpt|chatgpt|claude|gemini|gemma|embeddinggemma|llama|mistral|mixtral|ministral|codestral|deepseek|qwen|qwq|falcon|nemotron|grok|command[ -]?r|nova|kimi|glm|aya|phi|copilot|codex|veo|imagen|sora|whisper|daybreak|synthid|weathernext|alphagenome|sima|genie|lyria|muse|tribe|bedrock|sagemaker|cosmos|nemo|nvidia|titan|granite)\b/i;
 
 /** Headline itself opens with the announcement verb ("Introducing …"), worth +1 extra. */
 const LEADS_WITH_ANNOUNCEMENT = /^\s*(?:introduc|announc|unveil|launch|meet|debut|released)/i;

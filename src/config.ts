@@ -72,6 +72,11 @@ export const FEEDS: FeedSource[] = [
 	{ name: 'OpenAI', url: 'https://openai.com/news/rss.xml' },
 	{ name: 'Google DeepMind', url: 'https://deepmind.google/blog/rss.xml' },
 	{ name: 'Google AI', url: 'https://blog.google/technology/ai/rss/' },
+	// High-volume partner/community feeds — the classifier keeps them quiet
+	// unless a headline is shaped like a genuine model launch.
+	{ name: 'Hugging Face', url: 'https://huggingface.co/blog/feed.xml' },
+	{ name: 'NVIDIA', url: 'https://blogs.nvidia.com/feed/' },
+	{ name: 'AWS ML', url: 'https://aws.amazon.com/blogs/machine-learning/feed/' },
 ];
 
 // Companies that expose no usable RSS feed. Each listing page is scraped for article links,

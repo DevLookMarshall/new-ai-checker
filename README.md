@@ -11,7 +11,10 @@ cron (*/5) ─▶ processFeed (RSS/Atom × 3) ─┐
                                             └─▶ health + daily heartbeat
 ```
 
-* **RSS sources** (`FEEDS` in `src/config.ts`): OpenAI, Google DeepMind, Google AI.
+* **RSS sources** (`FEEDS` in `src/config.ts`): OpenAI, Google DeepMind,
+  Google AI, Hugging Face, NVIDIA, AWS ML. The last three are high-volume
+  partner/community feeds — the classifier keeps them quiet unless a headline
+  is shaped like a genuine model launch.
   Parsed by `parseFeed()` (`src/parse.ts`), which understands RSS 2.0 **and**
   Atom. `ETag` / `If-Modified-Since` are stored in KV so unchanged feeds
   answer `304` instead of re-downloading.
@@ -56,16 +59,30 @@ KV namespace is already bound in `wrangler.jsonc`
 
 ```bash
 npm run dev        # local dev (cron simulated)
-npm test           # 38 tests (node:test, no deps)
+npm test           # 41 tests (node:test, no deps)
 npm run typecheck  # tsc --noEmit
 npm run check      # typecheck + tests
 npm run deploy     # wrangler deploy
+```
+
+Trigger a manual check without waiting for cron (needs the bot token):
+
+```bash
+curl -X POST -H "Authorization: Bearer $TELEGRAM_BOT_TOKEN" \
+  https://<your-worker>.workers.dev/run
+curl -X POST -H "Authorization: Bearer $TELEGRAM_BOT_TOKEN" \
+  "https://<your-worker>.workers.dev/run?source=Hugging%20Face"
 ```
 
 ## Endpoints
 
 * `GET /health` / `/healthz` — `{ ok, sources, telegram: { botTokenSet, chatIdSet }, kvReachable, lastHeartbeat }`
 * `GET /` — `AI Radar is alive!`
+* `POST /run[?source=<name>]` — secured manual trigger. Requires
+  `Authorization: Bearer <TELEGRAM_BOT_TOKEN>` (the bot token doubles as the
+  shared secret, so no new secret is needed). Narrows to one source when
+  `?source=` matches a source name (case-insensitive), otherwise runs all.
+  Responds `{ ok, ran, failed, errors }`.
 
 ## Adding a source
 

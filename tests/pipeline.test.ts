@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { FEEDS } from '../src/config.ts';
+import worker from '../src/index.ts';
 import { processFeed } from '../src/sources.ts';
 import { createFetchRouter, FakeKv, makeEnv, rss } from './helpers.ts';
 
@@ -187,5 +189,62 @@ test('per-run announcement cap limits flood damage', async () => {
 	} finally {
 		router.restore();
 	}
+});
+
+test('FEEDS registry includes the new high-volume partner feeds', () => {
+	const names = FEEDS.map((feed) => feed.name);
+	for (const expected of ['OpenAI', 'Google DeepMind', 'Google AI', 'Hugging Face', 'NVIDIA', 'AWS ML']) {
+		assert.ok(names.includes(expected), `missing feed: ${expected}`);
+	}
+});
+
+test('new partner feeds baseline + announce through the real pipeline', async () => {
+	for (const feed of FEEDS.filter((f) => ['Hugging Face', 'NVIDIA', 'AWS ML'].includes(f.name))) {
+		const kv = new FakeKv();
+		const router = createFetchRouter();
+		router.routes.push({
+			match: (url) => url === feed.url,
+			handle: () =>
+				new Response(rss([{ title: 'Introducing Falcon ASR', link: 'https://example.com/falcon-asr' }]), { status: 200 }),
+		});
+		router.install();
+		try {
+			const env = makeEnv(kv);
+			// First run baselines silently.
+			await processFeed(feed, env);
+			assert.equal(router.sent.length, 0);
+			// A genuinely new model release announces exactly once.
+			router.routes.length = 0;
+			router.routes.push({
+				match: (url) => url === feed.url,
+				handle: () =>
+					new Response(
+						rss([
+							{ title: 'Introducing Falcon ASR', link: 'https://example.com/falcon-asr' },
+							{ title: `Introducing ${feed.name} Ultra 2`, link: 'https://example.com/ultra-2' },
+						]),
+						{ status: 200 },
+					),
+			});
+			await processFeed(feed, env);
+			assert.equal(router.sent.length, 1, `${feed.name} should announce the new release`);
+		} finally {
+			router.restore();
+		}
+	}
+});
+
+test('POST /run requires Bearer auth and 404s unknown sources', async () => {
+	const env = makeEnv(new FakeKv());
+	const noAuth = await worker.fetch(new Request('https://radar.test/run', { method: 'POST' }), env);
+	assert.equal(noAuth.status, 401);
+	const badSource = await worker.fetch(
+		new Request('https://radar.test/run?source=nope', {
+			method: 'POST',
+			headers: { authorization: 'Bearer test-token' },
+		}),
+		env,
+	);
+	assert.equal(badSource.status, 404);
 });
 
