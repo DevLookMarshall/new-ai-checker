@@ -16,6 +16,10 @@
     /* Enable importing .json files */
 		"resolveJsonModule": true,
 
+		/* Allow explicit `.ts` import specifiers (required by Node's built-in test runner);
+		   valid because "noEmit" is enabled below. */
+		"allowImportingTsExtensions": true,
+
     /* Allow JavaScript files to be a part of your program. Use the `checkJS` option to get errors from these files. */
 		"allowJs": true,
     /* Enable error reporting in type-checked JavaScript files. */

@@ -11,11 +11,17 @@
 		"enabled": true
 	},
 	"triggers": {
-		"crons": [
-			"* * * * *"
-		]
+		// Every 5 minutes: ~95% fewer origin requests and KV reads than a per-minute
+		// cron, still fast enough for a model-launch announcement.
+		"crons": ["*/5 * * * *"]
 	},
-	"upload_source_maps": true
+	"upload_source_maps": true,
+	"kv_namespaces": [
+		{
+			"binding": "NEW_AI_CHECKER_KV",
+			"id": "b4e190e01d82466b9a546ffdb75e54e8"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
