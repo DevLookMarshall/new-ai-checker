@@ -8,6 +8,9 @@
 export interface Env {
 	TELEGRAM_BOT_TOKEN: string;
 	TELEGRAM_CHAT_ID: string;
+	TELEGRAM_CHANNEL_ID?: string;
+	GEMINI_API_KEY?: string;
+	OPENAI_API_KEY?: string;
 	NEW_AI_CHECKER_KV: KVNamespace;
 }
 

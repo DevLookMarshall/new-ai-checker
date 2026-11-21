@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<title>AI Radar — رادار و تحلیلگر فارسی مدل‌های هوش مصنوعی</title>
+		<script src="https://telegram.org/js/telegram-web-app.js"></script>
+		<link rel="stylesheet" href="./style.css?v=2" />
+	</head>
+	<body>
+		<main class="app-shell">
+			<header class="hero card">
+				<div class="hero-top">
+					<div>
+						<p class="eyebrow">AI MODEL RADAR</p>
+						<h1>رادار و تحلیلگر مدل‌های هوش مصنوعی</h1>
+					</div>
+					<span id="sub-badge" class="pill pill-muted">در حال بررسی...</span>
+				</div>
+				<p class="subtitle">
+					رصد معرفی مدل‌های جدید از OpenAI، DeepMind، Anthropic، Meta، xAI، Hugging Face، NVIDIA و AWS همراه با ترجمه و تحلیل فارسی
+				</p>
+				<div class="actions">
+					<button id="scan-btn" class="btn btn-primary" type="button">🔍 اسکن زنده منابع</button>
+					<button id="sub-btn" class="btn btn-secondary" type="button">🔔 مدیریت اعلان</button>
+				</div>
+				<p id="status-banner" class="banner" hidden></p>
+			</header>
+
+			<section class="stats-grid" aria-label="آمار کلی">
+				<article class="stat card">
+					<span class="stat-label">منابع سالم</span>
+					<strong id="stat-healthy" class="stat-value">—</strong>
+				</article>
+				<article class="stat card">
+					<span class="stat-label">مدل‌های ثبت‌شده</span>
+					<strong id="stat-releases" class="stat-value">—</strong>
+				</article>
+				<article class="stat card">
+					<span class="stat-label">کانال‌های متصل</span>
+					<strong id="stat-channels" class="stat-value">—</strong>
+				</article>
+			</section>
+
+			<section class="card section-block">
+				<div class="section-head">
+					<h2>🧠 تحلیلگر و مترجم فارسی خبر</h2>
+					<span id="ai-mode-badge" class="meta-text">موتور داخلی</span>
+				</div>
+				<p class="helper-text">
+					هر خبر یا عنوان انگلیسی مدل‌های هوش مصنوعی را اینجا بگذارید تا بلافاصله به فارسی ترجمه و تحلیل شود:
+				</p>
+				<textarea
+					id="custom-text"
+					class="input-area"
+					rows="3"
+					placeholder="مثال: Introducing Claude 4.5 Opus with extended reasoning and coding agents"
+				></textarea>
+				<div class="inline-actions">
+					<button id="custom-analyze-btn" class="btn btn-primary btn-sm" type="button">✨ ترجمه و تحلیل فارسی</button>
+				</div>
+				<div id="custom-analysis-result" class="analysis-box" hidden></div>
+			</section>
+
+			<section class="card section-block">
+				<div class="section-head">
+					<h2>📢 ارسال خودکار به کانال تلگرام</h2>
+				</div>
+				<p class="helper-text">
+					ابتدا ربات <code>@realainewsbot</code> را ادمین کانال کنید (با دسترسی ارسال پیام)، سپس یوزرنیم یا شناسه عددی کانال را وارد کنید:
+				</p>
+				<div class="channel-form">
+					<input
+						id="channel-input"
+						class="input-field"
+						type="text"
+						dir="ltr"
+						placeholder="@my_ai_channel یا -1001234567890"
+					/>
+					<button id="add-channel-btn" class="btn btn-primary btn-sm" type="button">اتصال و تست</button>
+				</div>
+				<div id="channels-list" class="channels-list"></div>
+			</section>
+
+			<section class="card section-block">
+				<div class="section-head">
+					<h2>📰 آخرین مدل‌ها و تحلیل فارسی</h2>
+					<span id="last-scan" class="meta-text">—</span>
+				</div>
+				<div id="releases-list" class="list">
+					<p class="empty">در حال دریافت اطلاعات...</p>
+				</div>
+			</section>
+
+			<section class="card section-block">
+				<div class="section-head">
+					<h2>📡 وضعیت ۹ منبع</h2>
+				</div>
+				<div id="sources-grid" class="sources-grid">
+					<p class="empty">در حال دریافت وضعیت منابع...</p>
+				</div>
+			</section>
+		</main>
+		<script src="./app.js?v=2"></script>
+	</body>
+</html>

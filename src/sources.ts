@@ -1,3 +1,5 @@
+import { analyzeReleasePersian } from './analyzer.ts';
+import type { Classification } from './classifier.ts';
 import { classifyModelRelease } from './classifier.ts';
 import type { Env, FeedItem, FeedSource, HtmlSource } from './config.ts';
 import {
@@ -83,8 +85,9 @@ function sleep(ms: number): Promise<void> {
  * un-seen (except a permanent Telegram rejection, which is marked to stop an
  * infinite per-run retry loop).
  */
-async function announceOnce(env: Env, source: string, item: FeedItem): Promise<'sent' | 'stopped'> {
-	const message = buildMessage(source, item);
+async function announceOnce(env: Env, source: string, item: FeedItem, classification?: Classification): Promise<'sent' | 'stopped'> {
+	const analysis = await analyzeReleasePersian(source, item, classification, env);
+	const message = buildMessage(source, item, analysis);
 
 	let result = await sendTelegramMessage(env, message, item.link);
 
@@ -168,10 +171,11 @@ export async function processFeed(source: FeedSource, env: Env): Promise<void> {
 				console.log(`${source.name}: per-run announcement cap reached (${sentCount}); remaining candidates next run.`);
 				break;
 			}
-			if (!classifyModelRelease(item.title).matched) continue;
+			const classification = classifyModelRelease(item.title);
+			if (!classification.matched) continue;
 			if (await env.NEW_AI_CHECKER_KV.get(await seenKey(item.link))) continue;
 
-			const outcome = await announceOnce(env, source.name, item);
+			const outcome = await announceOnce(env, source.name, item, classification);
 			if (outcome !== 'sent') break;
 			sentCount += 1;
 		}
@@ -251,13 +255,14 @@ export async function processHtmlSource(source: HtmlSource, env: Env): Promise<v
 			}
 
 			const item = article.item;
-			if (!classifyModelRelease(item.title).matched) {
+			const classification = classifyModelRelease(item.title);
+			if (!classification.matched) {
 				console.log(`${source.name} skipped: ${item.title}`);
 				await markSeen(env, key, { source: source.name, ...item, processedAt: new Date().toISOString() });
 				continue;
 			}
 
-			const outcome = await announceOnce(env, source.name, item);
+			const outcome = await announceOnce(env, source.name, item, classification);
 			if (outcome !== 'sent') break;
 			sentCount += 1;
 		}

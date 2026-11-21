@@ -3,5 +3,11 @@
 # Production secrets:
 #   npx wrangler secret put TELEGRAM_BOT_TOKEN
 #   npx wrangler secret put TELEGRAM_CHAT_ID
+#   npx wrangler secret put TELEGRAM_CHANNEL_ID   # Optional: @channel or -100...
+#   npx wrangler secret put GEMINI_API_KEY        # Optional: deeper Persian AI analysis
+#   npx wrangler secret put OPENAI_API_KEY        # Optional: deeper Persian AI analysis
 TELEGRAM_BOT_TOKEN=
 TELEGRAM_CHAT_ID=
+TELEGRAM_CHANNEL_ID=
+GEMINI_API_KEY=
+OPENAI_API_KEY=

@@ -1,3 +1,4 @@
+import type { PersianAnalysis } from './analyzer.ts';
 import type { Env, FeedItem } from './config.ts';
 import { TELEGRAM_MAX_RETRY_DELAY_MS } from './config.ts';
 
@@ -14,24 +15,30 @@ export function escapeHtml(text: string): string {
 	return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-export function buildMessage(source: string, item: FeedItem): string {
+export function buildMessage(source: string, item: FeedItem, analysis?: PersianAnalysis): string {
 	const lines = ['🚨 AI MODEL RADAR', '', `🏢 <b>${escapeHtml(source)}</b>`, `🧠 <b>${escapeHtml(item.title)}</b>`];
 
+	if (analysis?.titleFa && analysis.titleFa !== item.title) {
+		lines.push(`🇮🇷 <b>ترجمه:</b> ${escapeHtml(analysis.titleFa)}`);
+	}
 	if (item.pubDate) lines.push(`📅 ${escapeHtml(item.pubDate)}`);
-	if (item.description) lines.push(`💬 ${escapeHtml(item.description)}`);
+	if (analysis?.descriptionFa) {
+		lines.push(`💬 ${escapeHtml(analysis.descriptionFa)}`);
+	} else if (item.description) {
+		lines.push(`💬 ${escapeHtml(item.description)}`);
+	}
+	if (analysis?.analysisFa) {
+		lines.push('', '📊 <b>تحلیل رادار:</b>', escapeHtml(analysis.analysisFa));
+	}
 
 	lines.push('', `🔗 ${item.link}`);
 
 	return lines.join('\n');
 }
 
-export async function sendTelegramMessage(env: Env, message: string, link?: string): Promise<TelegramSendResult> {
-	if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
-		return { ok: false, action: 'skip', reason: 'TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID is not set' };
-	}
-
+async function sendToChatId(botToken: string, chatId: string, message: string, link?: string): Promise<TelegramSendResult> {
 	const payload: Record<string, unknown> = {
-		chat_id: env.TELEGRAM_CHAT_ID,
+		chat_id: chatId,
 		text: message.slice(0, 4096),
 		parse_mode: 'HTML',
 		link_preview_options: { is_disabled: false },
@@ -41,7 +48,7 @@ export async function sendTelegramMessage(env: Env, message: string, link?: stri
 	}
 
 	try {
-		const response = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+		const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),
@@ -77,4 +84,26 @@ export async function sendTelegramMessage(env: Env, message: string, link?: stri
 	} catch (error) {
 		return { ok: false, action: 'retry', reason: error instanceof Error ? error.message : String(error) };
 	}
+}
+
+export async function sendTelegramMessage(env: Env, message: string, link?: string): Promise<TelegramSendResult> {
+	const targets = [env.TELEGRAM_CHAT_ID, env.TELEGRAM_CHANNEL_ID]
+		.map((v) => v?.trim())
+		.filter((v): v is string => Boolean(v));
+	const uniqueTargets = [...new Set(targets)];
+
+	if (!env.TELEGRAM_BOT_TOKEN || uniqueTargets.length === 0) {
+		return { ok: false, action: 'skip', reason: 'TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID is not set' };
+	}
+
+	let primaryResult: TelegramSendResult | null = null;
+	for (const chatId of uniqueTargets) {
+		const res = await sendToChatId(env.TELEGRAM_BOT_TOKEN, chatId, message, link);
+		if (!primaryResult) primaryResult = res;
+		if (!res.ok && primaryResult.ok) {
+			console.error(`Telegram secondary target (${chatId}) failed: ${res.reason}`);
+		}
+	}
+
+	return primaryResult ?? { ok: false, action: 'skip', reason: 'no target chat configured' };
 }
